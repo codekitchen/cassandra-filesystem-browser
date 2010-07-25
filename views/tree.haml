@@ -1,0 +1,33 @@
+%html
+  %head
+    %link{ :rel => 'stylesheet', :href => '/tree.css', :type => 'text/css' }
+  %body
+    %form#search{ :method => 'get', :action => "/search/#{@username}" }
+      %input#search-name{ :name => 'q' }
+      %input{ :type => 'submit', :value => 'Search' }
+    %h3= @path
+    %table#tree
+      %thead
+        %tr
+          %th.name Name
+          %th.size Size
+          %th.mtime Modified
+      - unless @path == ""
+        %tr
+          %td.name.directory
+            %a{ :href => link_to_parent(@username, @path) } ..
+      - @entries.each do |name, info|
+        %tr
+          - if info['type'] == 'directory'
+            %td.name.directory
+              %a{ :href => link_to_tree(@username, @path, name) }= display_name name
+          - else
+            %td.name.file
+              %a{ :href => link_to_file(@username, @path, name) }= display_name name
+            %td.size= info['size']
+            %td.mtime= Time.at(info['mtime'].to_i).strftime("%D %T")
+    %p
+      - if @start
+        %a{ :href => "?rev=1&start=#{@start}" } Prev
+      - if @next
+        %a{ :href => "?start=#{@next}" } Next

@@ -1,0 +1,20 @@
+%html
+  %head
+    %link{ :rel => 'stylesheet', :href => '/tree.css', :type => 'text/css' }
+  %body
+    %form#search{ :method => 'get', :action => "/search/#{@username}" }
+      %input#search-name{ :name => 'q', :value => @search }
+      %input{ :type => 'submit', :value => 'Search' }
+    %h3= @search
+    %table#tree
+      %thead
+        %tr
+          %th.name Name
+          %th.size Size
+          %th.mtime Modified
+      - @results.each do |name, info|
+        %tr
+          %td.name.file
+            %a{ :href => link_to_search_result(@username, name) }= name
+          %td.size= info['size']
+          %td.mtime= Time.at(info['mtime'].to_i).strftime("%D %T")

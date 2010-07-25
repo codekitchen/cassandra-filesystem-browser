@@ -1,0 +1,20 @@
+%html
+  %head
+    %link{ :rel => 'stylesheet', :href => '/tree.css', :type => 'text/css' }
+  %body
+    %h3= @path
+    %table#tree
+      %thead
+        %tr
+          %th.mtime Modification
+          %th.size Size
+          %th.stime Store Time
+          %th.hash Contents SHA1
+      - @versions.each do |uuid, info|
+        %tr
+          %td.mtime= Time.at(info['mtime'].to_i).strftime("%D %T")
+          %td.size= info['size']
+          %td.stime= Time.at(info['stime'].to_i).strftime("%D %T")
+          %td.hash= info['sha1']
+    %p
+      %a{ :href => link_to_parent(@username, @path) } Back
