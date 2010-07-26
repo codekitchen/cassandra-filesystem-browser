@@ -11,25 +11,26 @@ user = ARGV[0]
 dir  = Dir.new(ARGV[1])
 
 # This schema is optimized for the file browser web app, not necessarily for
-# inserting new files and new versions of files.
+# inserting new files and new versions of files. Insertion is fairly quick as
+# well, but needs work.
 #
-# By choosing cassandra's random partitioner, we can ensure that in aggregate,
-# every individual file and directory will be randomly spread across the node's
-# clusters, even within the same user. Another option would be to partition
-# things so that all of a user's data is usually stored on one node. But this
-# randomizing scheme *helps* protect against heavy users of the system
-# concentrating all their load on one cassandra box, which could result in hot
-# spots in the token ring. It doesn't complete prevent that of course. Caching
-# recently accessed directory/file entries in memcache could help here too.
+# By choosing cassandra's random partitioner, we spread a user's files and
+# directories randomly across all the nodes in the cassandra cluster. This helps
+# eliminate hotspots that could be caused by heavy users of the app. Really, a
+# production system would probably cache the recently accessed files and
+# directories in memcache (and tweak cassandra's caching parameters
+# appropriately, too).
 #
 # There are two main ColumnFamilies in this app, both SuperColumnFamilies:
 #
-# Directories:
+# Directories is a materialized view on the contents of each directory at this
+# point in time. This allows the web UI to render the entire directory view with
+# one call to cassandra:
 #   dir_name => { child_name => child_info }
 #
-# child_info for files is a cached view on the latest version of the file. So
-# you can pull the size, mtime, etc., of the latest version as part of the
-# get(:Directory, ...) call, but for more details you'll need to get(:File, ...)
+# child_info is a cached view on the latest version of the file. So you can pull
+# the size, mtime, etc., of the latest version as part of the get(:Directory,
+# ...) call, but for more details you'll need to get(:File, ...)
 #
 # e.g., in JSON:
 #
